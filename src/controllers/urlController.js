@@ -54,4 +54,20 @@ const createShorturl = async function (req, res) {
   }
 };
 
-module.exports = { createShorturl };
+const geturl = async function (req,res) {
+    try {
+        const {urlCode} = req.params
+        const result = await urlModel.findOne({ urlCode })
+        console.log(result)
+        if(!result){return res.status(400).send({status:true,msg:"this is not correct"})}
+        let longUrl= result.longUrl
+        console.log(longUrl)
+       //res.status(302).send({longUrl:longUrl})
+       return res.status(302).redirect(longUrl)
+    } catch (error) {
+      return  res.status(500).send({ status: false, msg: error.message });  
+    }
+    
+}
+
+module.exports = { createShorturl,geturl };
