@@ -12,6 +12,10 @@ const createShorturl = async function (req, res) {
 
     let { urlCode, longUrl, shortUrl } = url
 
+    if(!urlCode){
+        res.status(400).send({ status: false, message: "Please provide urlCode" })
+    } 
+
     if(!longUrl){
         res.status(400).send({ status: false, message: "Please provide longUrl" })
     }
@@ -21,6 +25,11 @@ const createShorturl = async function (req, res) {
         res.status(404).send({ status: false, message: "this url is already exist plz provide different url" })
     }
 
-    let createUrl
+    let baseUrl= "https://localhost:3000"
+
+    let createShortU=baseUrl+"/"+shortid.generate()
+
 
 }
+
+module.exports={createShorturl}
