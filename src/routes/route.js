@@ -4,7 +4,7 @@ const {createShorturl,fetchUrlData}=require("../controllers/urlController")
 
 //create short url
 router.post("/url/shorten",createShorturl)
-// router.get("/:urlCode",geturl)
+//get url data
 router.get("/:urlCode",fetchUrlData)
 
 

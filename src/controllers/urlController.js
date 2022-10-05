@@ -30,7 +30,7 @@ const createShorturl = async function (req, res) {
     if (!originalUrl) {
       return res
         .status(400)
-        .send({ staus: false, msg: "User need to put long url" });
+        .send({ status: false, msg: "User need to put long url" });
     }
     if (Object.keys(originalUrl).length == 0) {
       return res.status(400).send({
@@ -38,18 +38,20 @@ const createShorturl = async function (req, res) {
         message: `Request body can't be empty`,
       });
     }
-    if (!validUrl.isUri(originalUrl)) {
-      return res.status(401).send({
-        status: false,
-        message: "Please provide valid base url in the code",
-      });
-    }
-    const urlCode = shortid.generate();
+    let checkUrl =
+      /^((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/.test(
+        req.body.longUrl
+      );
+      if(!checkUrl){
+        return res.status(400).send({status:false,msg:"Please provide valid long url"})
+      }
+
+    const urlCode = shortid.generate().toLowerCase();
     const shortUrl = "http://localhost:3000" + "/" + urlCode;
     let output = {
       longUrl: originalUrl,
       shortUrl: shortUrl,
-      urlCode: urlCode.trim().toLowerCase(),
+      urlCode: urlCode,
     };
     let cachedUrl = await GET_ASYNC(`${originalUrl}`);
     if (cachedUrl) {
@@ -84,46 +86,27 @@ const createShorturl = async function (req, res) {
 
 const fetchUrlData = async function (req, res) {
   try{
-  let cahcedUrlData = await GET_ASYNC(`${req.params.urlCode}`);
-  if (cahcedUrlData) {
-    let convertDataToJson = JSON.parse(cahcedUrlData);
-    return res.status(302).redirect(convertDataToJson.longUrl);
-  } else {
-    let findUrl = await urlModel.findOne({ urlCode: req.params.urlCode });
-    await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(findUrl));
-    return res.status(200).send({
-      status: true,
-      msg: "This url already exist in database",
-      data: findUrl,
-    });
-  }
-}catch(err){
-  return res.status(500).send({status:false,error:err.message})
+    let cacheUrl = await GET_ASYNC(`${req.params.urlCode}`)
+    if(cacheUrl === null){
+        cacheUrl = JSON.parse(cacheUrl)
+        return res.status(302).redirect(cacheUrl.longUrl)
+    }
+    let findURL = await urlModel.findOne({urlCode: req.params.urlCode})
+    if(!findURL){
+      return res.status(404).send({
+            status: false,
+            msg: "No such urlCode found!"
+        })
+    }
+    await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(findURL))
+    return res.status(302).redirect(findURL.longUrl)
+}catch(e){
+    res.status(500).send({
+        status: false,
+        msg: e.message
+    })
 }
- }
+
+};
 
 module.exports = { createShorturl, fetchUrlData };
-
-
-
-
-// // const fetchUrlData = async function (req, res) {
-// //   try {
-//     let cahcedUrlData = await GET_ASYNC(`${req.params.urlCode}`);
-//     if (cahcedUrlData == null) {
-//       let findUrl = await urlModel.findOne({ urlCode: req.params.urlCode });
-//       if (cahcedUrlData == null) {
-//         return res.status(404).send({
-//           status: true,
-//           msg: "url not found",
-//         });
-//       }
-//       await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(findUrl));
-//       return res.status(200).send(findUrl.longUrl);
-//     } else {
-//       return res.status(302).redirect(cahcedUrlData);
-//     }
-//   } catch (err) {
-//     return res.status(500).send({ status: false, error: err.message });
-//   }
-// };
