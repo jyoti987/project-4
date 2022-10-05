@@ -87,7 +87,7 @@ const createShorturl = async function (req, res) {
 const fetchUrlData = async function (req, res) {
   try{
     let cacheUrl = await GET_ASYNC(`${req.params.urlCode}`)
-    if(cacheUrl === null){
+    if(cacheUrl){
         cacheUrl = JSON.parse(cacheUrl)
         return res.status(302).redirect(cacheUrl.longUrl)
     }
