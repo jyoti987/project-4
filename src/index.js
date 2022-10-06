@@ -11,7 +11,6 @@ mongoose.connect('mongodb+srv://kasarvaibhav777:VqAQ4xWgRUOXRW7N@cluster0.y2iweu
 .then( ()=> console.log("MongoDb is connected"))
 .catch( err => console.log(err))
 
-// app.use(express.json())
 
 app.use('/', route)
 
