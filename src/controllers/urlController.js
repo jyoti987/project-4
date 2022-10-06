@@ -1,5 +1,4 @@
 const shortid = require("shortid");
-const validUrl = require("valid-url");
 const urlModel = require("../models/urlModel");
 const redis = require("redis");
 const { promisify } = require("util");
@@ -22,7 +21,7 @@ redisClient.on("connect", async function () {
 const SET_ASYNC = promisify(redisClient.SET).bind(redisClient);
 const GET_ASYNC = promisify(redisClient.GET).bind(redisClient);
 
-//-------------------------------create api-----------------------------------//
+//-------------------------------create api----------------------------------------//
 
 const createShorturl = async function (req, res) {
   try {
@@ -42,9 +41,11 @@ const createShorturl = async function (req, res) {
       /^((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/.test(
         req.body.longUrl
       );
-      if(!checkUrl){
-        return res.status(400).send({status:false,msg:"Please provide valid long url"})
-      }
+    if (!checkUrl) {
+      return res
+        .status(400)
+        .send({ status: false, msg: "Please provide valid long url" });
+    }
 
     const urlCode = shortid.generate().toLowerCase();
     const shortUrl = "http://localhost:3000" + "/" + urlCode;
@@ -85,28 +86,27 @@ const createShorturl = async function (req, res) {
 //---------------------get api------------------------------------//
 
 const fetchUrlData = async function (req, res) {
-  try{
-    let cacheUrl = await GET_ASYNC(`${req.params.urlCode}`)
-    if(cacheUrl === null){
-        cacheUrl = JSON.parse(cacheUrl)
-        return res.status(302).redirect(cacheUrl.longUrl)
+  try {
+    let cacheUrl = await GET_ASYNC(`${req.params.urlCode}`);
+    if (cacheUrl) {
+      cacheUrl = JSON.parse(cacheUrl);
+      return res.status(302).redirect(cacheUrl.longUrl);
     }
-    let findURL = await urlModel.findOne({urlCode: req.params.urlCode})
-    if(!findURL){
+    let findURL = await urlModel.findOne({ urlCode: req.params.urlCode });
+    if (!findURL) {
       return res.status(404).send({
-            status: false,
-            msg: "No such urlCode found!"
-        })
-    }
-    await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(findURL))
-    return res.status(302).redirect(findURL.longUrl)
-}catch(e){
-    res.status(500).send({
         status: false,
-        msg: e.message
-    })
-}
-
+        msg: "No such urlCode found!",
+      });
+    }
+    await SET_ASYNC(`${req.params.urlCode}`, JSON.stringify(findURL));
+    return res.status(302).redirect(findURL.longUrl);
+  } catch (err) {
+    res.status(500).send({
+      status: false,
+      msg: err.message,
+    });
+  }
 };
 
 module.exports = { createShorturl, fetchUrlData };
