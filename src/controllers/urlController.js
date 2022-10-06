@@ -83,7 +83,7 @@ const createShorturl = async function (req, res) {
   }
 };
 
-//---------------------get api------------------------------------//
+//----------------------------get api------------------------------------//
 
 const fetchUrlData = async function (req, res) {
   try{
@@ -110,3 +110,6 @@ const fetchUrlData = async function (req, res) {
 };
 
 module.exports = { createShorturl, fetchUrlData };
+
+
+

@@ -2,9 +2,7 @@ const express =require('express')
 const app =express()
 const mongoose = require('mongoose')
 const route = require('./routes/route')
-
 app.use(express.json())
-
 
 
 mongoose.connect('mongodb+srv://kasarvaibhav777:VqAQ4xWgRUOXRW7N@cluster0.y2iweu3.mongodb.net/Project-04', {
